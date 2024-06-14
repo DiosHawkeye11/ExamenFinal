@@ -3,7 +3,7 @@ defmodule JswatchWeb.IndigloManager do
 
   def init(ui) do
     :gproc.reg({:p, :l, :ui_event})
-    {:ok, %{ui_pid: ui, st: IndigloOff, count: 0, timer1: nil}}
+    {:ok, %{ui_pid: ui, st: IndigloOff, count: 0, timer1: nil, timeout_ref: nil}}
   end
 
   def handle_info(:"top-right-pressed", %{ui_pid: pid, st: IndigloOff} = state) do
@@ -15,7 +15,8 @@ defmodule JswatchWeb.IndigloManager do
     timer = Process.send_after(self(), Waiting_IndigloOff, 2000)
     {:noreply, %{state | st: Waiting, timer1: timer}}
   end
-  def handle_info(:"top-left-pressed", state) do
+  def handle_info(:"bottom-right-pressed", %{ui_pid: pid, st: IndigloOff} = state) do
+    timeout_ref = Process.send_after(self(), :SnoozeOn, 2000)
     :gproc.send({:p, :l, :ui_event}, :update_alarm)
     {:noreply, state}
   end
